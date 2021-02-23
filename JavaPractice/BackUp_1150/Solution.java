@@ -3,75 +3,65 @@ import java.util.*;
 
 class Solution {
     public static int solution(int n, int k, int[] companyArr) {
-        
-        int[] distArr = new int[n-1];
-        int[] distArrOrd = new int[n-1];
-        int[] distArrRev = new int [n-1];
-        int minimum = 1000000000;
-        int minIx = 0;
+        int answer=0;
+        PriorityQueue<Cable> cableQue = new PriorityQueue<>();
+        Set<Integer> selectedSet = new HashSet<>();
+
         for (int i=1; i<n; i++) {
-            int distance = companyArr[i] - companyArr[i-1];
-            distArr[i-1] = distance;
-            if (distance < minimum) {
-                minimum = distance;
-                minIx = i-1;
-            }
+            Cable cable = new Cable(i-1, i, companyArr[i]-companyArr[i-1]);
+            cableQue.add(cable);
         }
-        for (int ix=0; ix<n-1; ix++) {
-            int anchor = minIx;
-            if (minIx + ix >= n-1) {
-                anchor  = minIx - (n-1);
-            }
-            distArrOrd[ix] = distArr[anchor + ix];
-        }
-
-        for (int j=0; j<n-1; j++) {
-            distArrRev[j] = distArrOrd[n-2 - j];
-        }
-        int answer1 = calculateMin(k, distArrOrd);
-        int answer2 = calculateMin(k, distArrRev);
-
-        if (answer1 < answer2) {
-            return answer1;
-        }
-        else {
-            return answer2;
-        }
-
-    }
-
-    private static int calculateMin(int k, int[] distArr) {
-        int answer = 0;
-        int n = distArr.length + 1;
-
-        int ix = 0;
 
         while (k > 0) {
-            if (ix+3 < n-1) {
-                if (distArr[ix] + distArr[ix+2] <= distArr[ix+1] + distArr[ix+3]) {
-                    answer += distArr[ix];
-                    ix += 2;
-                }
-                else {
-                    answer += distArr[ix+1];
-                    ix += 3;
+            Cable selectedCable = cableQue.poll();
+
+            if (selectedCable != null) {
+                if (selectedSet.contains(selectedCable.left) || selectedSet.contains(selectedCable.right)) {
+                    continue;
+                } else {
+                    int length = selectedCable.length;
+                    int left = selectedCable.left;
+                    int right = selectedCable.right;
+
+                    answer += length;
+                    selectedSet.add(left);
+                    selectedSet.add(right);
+
+                    if (left > 0 && right < n - 1) {
+                        left = left - 1;
+                        right = right + 1;
+
+                        Cable newCable = new Cable(left, right, companyArr[right] - companyArr[left] - 2 * length);
+                        cableQue.add(newCable);
+                    }
                 }
             }
-            else if (ix < n-2){
-                if (distArr[ix] <= distArr[ix+1] || k > 1) {
-                    answer += distArr[ix];
-                    ix += 2;
-                }
-                else {
-                    answer += distArr[ix+1];
-                    ix += 3;
-                }
-            }
-            else {
-                answer += distArr[ix];
-            }
-            k--;     
+            k--;
         }
         return answer;
+    }
+
+}
+
+class Cable implements Comparable<Cable> {
+    int left;
+    int right;
+    int length;
+
+    public Cable(int left, int right, int length) {
+        this.left = left;
+        this.right = right;
+        this.length = length;
+    }
+
+    @Override
+    public int compareTo(Cable cable) {
+        if (this.length == cable.length) {
+            return cable.left - this.left;
+        }
+        else {
+            return this.length - cable.length;
+        }
+        
     }
 }
