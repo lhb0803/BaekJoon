@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -8,70 +9,27 @@ public class Main {
         int N = Integer.parseInt(br.readLine());
         int K = Integer.parseInt(br.readLine());
         String[] sensorsS = br.readLine().split(" ");
+        int[] sensors = new int[N];
 
         int answer = 0;
 
-        if (N <= K) {
-            answer = 0;
-        }
-        else {
-            int[] sensors = new int[N];
+        if (N > K) {
             for (int i=0; i<N; i++) {
                 sensors[i] = Integer.parseInt(sensorsS[i]);
             }
-            int[] sensorsBoundary = new int[2*K];
+            Arrays.sort(sensors);
 
-            for (int i=0; i<N; i++) {
-                int sensor = sensors[i];
-                if (i < K) {
-                    sensorsBoundary[2*i] = sensor;
-                    sensorsBoundary[2*i+1] = sensor;
-                }
-                else {
-                    for (int j=0; j<2*K;) {
-                        if (j % 2 == 0) {
-                            if (sensor < sensorsBoundary[j]) {
-                                sensorsBoundary[j] = sensor;
-                                break;
-                            }
-                            else if (sensor >= sensorsBoundary[j] && sensor <= sensorsBoundary[j+1]) {
-                                break;
-                            }
-                            else if (sensor > sensorsBoundary[j+1]) {
-                                j++;
-                            }
-                        }
-                        else {
-                            if (j == 2*K-1) {
-                                sensorsBoundary[j] = sensor;
-                                break;
-                            }
-                            else if (sensor > sensorsBoundary[j+1]) {
-                                j++;
-                            }
-                            else {
-                                if (sensor - sensorsBoundary[j] <= sensorsBoundary[j+1] - sensor) {
-                                    sensorsBoundary[j] = sensor;
-                                }
-                                else {
-                                    sensorsBoundary[j+1] = sensor;
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
+            int[] distArr = new int[N-1];
+            for (int i=0; i<N-1; i++) {
+                distArr[i] = sensors[i+1] - sensors[i];
             }
+            Arrays.sort(distArr);
 
-            for (int ix=0; ix<2*K; ix+=2) {
-                answer += sensorsBoundary[ix+1]-sensorsBoundary[ix];
-                System.out.print("[");
-                System.out.print(sensorsBoundary[ix]); System.out.print(" "); System.out.print(sensorsBoundary[ix+1]);
-                System.out.print("]");
+            for (int j=0; j<N-K; j++) {
+                answer += distArr[j];
             }
         }
 
-        System.out.println();
         System.out.println(answer);
         br.close();
     }
